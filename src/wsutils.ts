@@ -1,8 +1,9 @@
 import * as fs from "fs";
 import {PathLike} from "fs";
 import * as mime from 'mime';
+import {Request, Response} from "express";
 
-export function sendFile(req, res, path: PathLike, status: number, args = {}) {
+export function sendFile(req:Request, res:Response, path: PathLike, status: number, args:any = {}) {
     // @ts-ignore
     let type = mime.getType(path);
     let content = fs.readFileSync(path, {encoding: 'utf-8'});
@@ -14,7 +15,7 @@ export function sendFile(req, res, path: PathLike, status: number, args = {}) {
             content = replaceAll(content, `"%key=%${key}%"`, `JSON.parse(atob("${btoa(JSON.stringify(args[key]))}"))`)
         }
     })
-    res.setHeader("Content-Type", type)
+    res.setHeader("Content-Type", type??"text/html")
     res.writeHead(status)
     if (res.req.method !== 'HEAD')
         res.write(content);
@@ -26,8 +27,8 @@ export function replaceAll(content: string, s: string, s2: string) {
     return content.split(s).join(s2)
 }
 
-export function btoa(obj) {
-    if (!obj) return;
+export function btoa(obj:any):string {
+    if (!obj) return "";
     if (typeof (obj) == "string") {
         return btoa_i(obj)
     } else {
@@ -39,7 +40,7 @@ function btoa_i(str: string) {
     return Buffer.from(str).toString("base64");
 }
 
-export function sendText(res, text, code) {
+export function sendText(res:Response, text:string, code:number) {
     try {
         res.writeHead(code, {"Content-Type": "text/html; charset=utf-8"})
         if (text && res.req.method !== 'HEAD')
@@ -49,7 +50,7 @@ export function sendText(res, text, code) {
     }
 }
 
-export function sendJSON(res, json, code) {
+export function sendJSON(res:Response, json:any, code:number) {
     try {
         let txt = JSON.stringify(json)
         res.writeHead(code, {"Content-Type": "application/json"})
@@ -60,6 +61,6 @@ export function sendJSON(res, json, code) {
     }
 }
 
-export function sendCompletion(res, text, error, code) {
+export function sendCompletion(res:Response, text:string, error:string, code:number) {
     sendJSON(res, {error: error, text: text}, code);
 }

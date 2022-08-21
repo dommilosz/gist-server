@@ -3,7 +3,6 @@ import {sendCompletion, sendFile, sendJSON, sendText} from './wsutils';
 import {firebase_db, realtime_db} from "./firebase";
 import rateLimit from 'express-rate-limit'
 import fs from 'fs';
-import {firestore} from "firebase-admin";
 
 type configType = {
     "rateLimiter": {
@@ -68,8 +67,10 @@ if (fs.existsSync("./config.json")) {
     process.exit(0);
 }
 
-Object.keys(default_config).forEach(configKey => {
+Object.keys(default_config).forEach((configKey) => {
+    // @ts-ignore
     if (config[configKey] === undefined) {
+        // @ts-ignore
         config[configKey] = default_config[configKey];
     }
 })
@@ -111,7 +112,7 @@ app.post('/create', async (req: Request, res: Response) => {
     let urlShort = body?.urlShort;
     let result = await createGist(data,name, urlShort);
 
-    return sendCompletion(res, result.text, result.error, 200);
+    return sendCompletion(res, result.text, String(result.error), 200);
 })
 
 app.get('/favicon.ico', (req: Request, res: Response) => {
@@ -125,7 +126,7 @@ app.get('/:shortUrl', async (req: Request, res: Response) => {
     let ref = firebase_db.collection("gists").doc(urlShort);
     let snapshot = await ref.get();
     if (snapshot.exists) {
-        let data = snapshot.data();
+        let data:any = snapshot.data();
         let content = data.content;
         let name = data.name;
         sendFile(req, res, "src/gist-view.html", 200, {...config.localization,content,name,code:urlShort});
@@ -151,7 +152,7 @@ app.listen(port, () => {
     console.log(`App listening on port ${port}`)
 })
 
-function makeid(length) {
+function makeid(length:number) {
     let result = '';
     let characters = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghjkmnopqrstuvwxyz0123456789';
     let charactersLength = characters.length;
@@ -167,7 +168,7 @@ function isCustom(url: string) {
     return !customRegex.test(url);
 }
 
-async function createGist(data,name, urlShort, retriesLeft = config.validation.randomRetries) {
+async function createGist(data:string,name:string, urlShort:string, retriesLeft = config.validation.randomRetries):Promise<{ text: string, error: boolean }> {
     if (!urlShort) {
         urlShort = 'A' + makeid(config.validation.randomShortUrlLength-1);
     }
@@ -198,7 +199,7 @@ async function createGist(data,name, urlShort, retriesLeft = config.validation.r
     return {text: urlShort, error: false};
 }
 
-function validateUrlAndData(data,name, urlShort){
+function validateUrlAndData(data:string,name:string, urlShort:string){
     if (!data) {
         return {text:"data not provided",error:true};
     }
