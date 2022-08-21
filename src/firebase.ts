@@ -8,9 +8,7 @@ let serviceAccount = require('../firebase-secrets.json');
 
 let defaultApp = initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL:config.databaseURL
 });
 
 export const firebase_db = getFirestore(defaultApp);
-export const realtime_db = admin.database();
 export const firebase_auth = getAuth();
