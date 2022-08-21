@@ -73,8 +73,12 @@ function edit_gist(){
     location.href = "/?edit="+code;
 }
 
+function raw_gist(){
+    location.href = "/raw/"+code;
+}
+
 async function fetchEdit(code){
-    let res = await fetch('/raw/'+code);
+    let res = await fetch('/data/'+code);
     let data = await res.json();
     if(data === "undefined"){
         return;

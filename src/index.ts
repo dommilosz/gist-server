@@ -135,7 +135,7 @@ app.get('/:shortUrl', async (req: Request, res: Response) => {
     }
 })
 
-app.get('/raw/:shortUrl', async (req: Request, res: Response) => {
+app.get('/data/:shortUrl', async (req: Request, res: Response) => {
     let params = req.params;
     let urlShort = params.shortUrl;
     urlShort = encodeURIComponent(urlShort);
@@ -145,6 +145,21 @@ app.get('/raw/:shortUrl', async (req: Request, res: Response) => {
         sendJSON(res,snapshot.data(),200)
     } else {
         sendText(res,"undefined",404)
+    }
+})
+
+app.get('/raw/:shortUrl', async (req: Request, res: Response) => {
+    let params = req.params;
+    let urlShort = params.shortUrl;
+    urlShort = encodeURIComponent(urlShort);
+    let ref = firebase_db.collection("gists").doc(urlShort);
+    let snapshot = await ref.get();
+    if (snapshot.exists) {
+        let data:any = snapshot.data();
+        let content = data.content;
+        sendText(res,content,200)
+    } else {
+        sendText(res,"404 Not found",404)
     }
 })
 
