@@ -61,6 +61,6 @@ export function sendJSON(res:Response, json:any, code:number) {
     }
 }
 
-export function sendCompletion(res:Response, text:string, error:string, code:number) {
+export function sendCompletion(res:Response, text:string, error:boolean, code:number) {
     sendJSON(res, {error: error, text: text}, code);
 }

@@ -112,7 +112,7 @@ app.post('/create', async (req: Request, res: Response) => {
     let urlShort = body?.urlShort;
     let result = await createGist(data,name, urlShort);
 
-    return sendCompletion(res, result.text, String(result.error), 200);
+    return sendCompletion(res, result.text, result.error, 200);
 })
 
 app.get('/favicon.ico', (req: Request, res: Response) => {
