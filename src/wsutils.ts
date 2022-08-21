@@ -42,7 +42,7 @@ function btoa_i(str: string) {
 
 export function sendText(res:Response, text:string, code:number) {
     try {
-        res.writeHead(code, {"Content-Type": "text/html; charset=utf-8"})
+        res.writeHead(code, {"Content-Type": "text/plain; charset=utf-8"})
         if (text && res.req.method !== 'HEAD')
             res.write(text)
         res.end()
