@@ -1,0 +1,47 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="/index.js"></script>
+    <title>%key=%loc-name%</title>
+</head>
+<body>
+<h1>%key=%loc-name%</h1>
+<h4>%key=%loc-rate-limits%</h4>
+<div id="main_div">
+    <div class="form-group">
+        <input class="form-field" id="name-input" type="text" placeholder="%key=%loc-name-box-p%">
+    </div>
+    <div class="form-group">
+        <span class="location-origin-text"></span>
+        <input class="form-field" id="surl-input" type="text" placeholder="%key=%loc-surl-box-p%">
+    </div>
+    <div class="form-group">
+        <button class="form-btn" onclick="do_create()">%key=%loc-create-button%</button>
+    </div>
+    <div></div>
+</div>
+<div class="form-group max-width-80">
+    <span id="create-result-bar"></span>
+    <input class="form-field" id="surl-output" type="text" placeholder="%key=%loc-surl-out-box-p%" readonly>
+</div>
+<div class="form-group" id="data-input-div">
+    <textarea class="form-field" id="data-input" placeholder="%key=%loc-long-data-box-p%"></textarea>
+</div>
+
+<script>
+    document.querySelector("#create-result-bar").innerHTML = "";
+    document.querySelector('#surl-output').value = ``
+    document.querySelector("#create-result-bar").style.color = 'white';
+
+    document.querySelectorAll(".location-origin-text").forEach(el=>{
+        el.innerHTML = location.origin+"/";
+    })
+
+    if(location.href.includes("?edit=")){
+        let code = location.href.split("?edit=")[1];
+        fetchEdit(code);
+    }
+</script>
+<link rel="stylesheet" href="index.css">
+</body>
+</html>
