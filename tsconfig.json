@@ -1,11 +1,6 @@
 {
-  "compilerOptions": {
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "outDir": "dist",
-    "target": "ES2021",
-    "moduleResolution": "Node"
-  },
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {"outDir": "dist"},
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
