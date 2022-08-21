@@ -91,7 +91,7 @@ const limiter = rateLimit({
 config.localization["loc-rate-limits"] = config.localization["loc-rate-limits"].replace("%1", String(config.rateLimiter.amount));
 config.localization["loc-rate-limits"] = config.localization["loc-rate-limits"].replace("%2", config.rateLimiter.window / 60 + " minutes");
 
-app.use('/shorten', limiter)
+app.use('/create', limiter)
 
 app.get('/', (req: Request, res: Response) => {
     sendFile(req, res, "src/index.html", 200, config.localization);
