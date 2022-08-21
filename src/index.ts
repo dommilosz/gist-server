@@ -1,6 +1,6 @@
 import express, {json, Request, Response} from 'express'
 import {sendCompletion, sendFile, sendJSON, sendText} from './wsutils';
-import {firebase_db, realtime_db} from "./firebase";
+import {firebase_db} from "./firebase";
 import rateLimit from 'express-rate-limit'
 import fs from 'fs';
 
