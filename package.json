@@ -16,9 +16,9 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "configuredjs": "^1.0.1",
+    "configuredjs": "^1.0.6",
     "express": "^4.18.1",
-    "express-rate-limit": "^6.5.1",
+    "express-rate-limit": "^6.5.2",
     "express-wsutils": "^1.0.2",
     "firebase-admin": "^11.0.1",
     "mime": "^3.0.0"
