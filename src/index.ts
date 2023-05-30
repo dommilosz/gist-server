@@ -4,6 +4,7 @@ import {firebase_db} from "./firebase";
 import rateLimit from 'express-rate-limit'
 import fs from 'fs';
 import configured from 'configuredjs';
+import cors from "cors";
 
 let config = configured({
     path: "./config.json", writeMissing: true, defaultConfig: {
@@ -48,6 +49,7 @@ const limiter = rateLimit({
 config.localization["loc-rate-limits"] = config.localization["loc-rate-limits"].replace("%1", String(config.rateLimiter.amount));
 config.localization["loc-rate-limits"] = config.localization["loc-rate-limits"].replace("%2", config.rateLimiter.window / 60 + " minutes");
 
+app.use(cors())
 app.use('/create', limiter)
 
 app.get('/', (req: Request, res: Response) => {
