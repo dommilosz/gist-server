@@ -1,8 +1,8 @@
 import express, {json, Request, Response} from 'express'
 import {sendCompletion, sendFile, sendJSON, sendText} from 'express-wsutils';
+import {ParamsDictionary} from "express-serve-static-core"
 import {firebase_db} from "./firebase";
 import rateLimit from 'express-rate-limit'
-import fs from 'fs';
 import configured from 'configuredjs';
 import cors from "cors";
 
@@ -78,30 +78,50 @@ app.get('/favicon.ico', (req: Request, res: Response) => {
     sendText(res, "", 404);
 })
 
-app.get('/:shortUrl', async (req: Request, res: Response) => {
-    let params = req.params;
-    let urlShort = params.shortUrl;
-    urlShort = encodeURIComponent(urlShort);
-    let ref = firebase_db.collection("gists").doc(urlShort);
+export type GistType = {content:string, name:string};
+export type FullGistType = {content:string, name:string, code:string};
+
+async function readGist(urlShort: string, directory?:string):Promise<FullGistType|undefined> {
+    let ref;
+    if (directory) {
+        ref = firebase_db.collection("gists").doc(urlShort);
+    } else {
+        ref = firebase_db.collection(`directories/${directory}/gists`).doc(urlShort);
+    }
+
     let snapshot = await ref.get();
     if (snapshot.exists) {
-        let data: any = snapshot.data();
-        let content = data.content;
-        let name = data.name;
-        sendFile(req, res, "src/gist-view.html", 200, {...config.localization, content, name, code: urlShort});
+        let gist = snapshot.data() as GistType;
+        return {...gist, code:urlShort};
+    } else {
+        return undefined;
+    }
+}
+
+async function readGistFromParams(params:ParamsDictionary){
+    let urlShort = params.shortUrl;
+    let directory = params.directory;
+    urlShort = encodeURIComponent(urlShort);
+    directory = encodeURIComponent(directory);
+    return await readGist(urlShort,directory);
+}
+
+app.get('/:shortUrl', async (req: Request, res: Response) => {
+    let gist = await readGistFromParams(req.params);
+    if (gist) {
+        let content = gist.content;
+        let name = gist.name;
+        sendFile(req, res, "src/gist-view.html", 200, {...config.localization, content, name, code: gist.code});
     } else {
         sendFile(req, res, "src/not-found.html", 404, config.localization);
     }
 })
 
 app.get('/data/:shortUrl', async (req: Request, res: Response) => {
-    let params = req.params;
-    let urlShort = params.shortUrl;
-    urlShort = encodeURIComponent(urlShort);
-    let ref = firebase_db.collection("gists").doc(urlShort);
-    let snapshot = await ref.get();
-    if (snapshot.exists) {
-        sendJSON(res, snapshot.data(), 200)
+    let gist = await readGistFromParams(req.params);
+
+    if (gist) {
+        sendJSON(res, gist, 200)
     } else {
         sendText(res, "undefined", 404)
     }
@@ -111,11 +131,9 @@ app.get('/raw/:shortUrl', async (req: Request, res: Response) => {
     let params = req.params;
     let urlShort = params.shortUrl;
     urlShort = encodeURIComponent(urlShort);
-    let ref = firebase_db.collection("gists").doc(urlShort);
-    let snapshot = await ref.get();
-    if (snapshot.exists) {
-        let data: any = snapshot.data();
-        let content = data.content;
+    let gist = await readGist(urlShort);
+    if (gist) {
+        let content = gist.content;
         sendText(res, content, 200)
     } else {
         sendText(res, "404 Not found", 404)
@@ -143,7 +161,7 @@ function isCustom(url: string) {
     return !customRegex.test(url);
 }
 
-async function createGist(data: string, name: string, urlShort: string, retriesLeft = config.validation.randomRetries): Promise<{ text: string, error: boolean }> {
+async function createGist(data: string, name: string, urlShort: string, retriesLeft = config.validation.randomRetries, directory = undefined): Promise<{ text: string, error: boolean }> {
     if (!urlShort) {
         urlShort = 'A' + makeid(config.validation.randomShortUrlLength - 1);
     }
@@ -154,8 +172,13 @@ async function createGist(data: string, name: string, urlShort: string, retriesL
     }
     let custom = isCustom(urlShort);
 
-    //let ref = realtime_db.ref(`urls/${custom ? "c" : "r"}/${urlShort}`);
-    let ref = firebase_db.collection("gists").doc(urlShort);
+    let ref;
+    if (directory) {
+        ref = firebase_db.collection("gists").doc(urlShort);
+    } else {
+        ref = firebase_db.collection(`directories/${directory}/gists`).doc(urlShort);
+    }
+
     let snapshot = await ref.get();
     if (snapshot.exists) {
         if (!custom) {
