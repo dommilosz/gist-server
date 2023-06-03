@@ -84,7 +84,7 @@ export type FullGistType = {content:string, name:string, code:string};
 
 async function readGist(urlShort: string, directory?:string):Promise<FullGistType|undefined> {
     let ref;
-    if (directory) {
+    if (!directory) {
         ref = firebase_db.collection("gists").doc(urlShort);
     } else {
         ref = firebase_db.collection(`directories/${directory}/gists`).doc(urlShort);
@@ -174,7 +174,7 @@ async function createGist(data: string, name: string, urlShort: string, director
     let custom = isCustom(urlShort);
 
     let ref;
-    if (directory) {
+    if (!directory) {
         ref = firebase_db.collection("gists").doc(urlShort);
     } else {
         ref = firebase_db.collection(`directories/${directory}/gists`).doc(urlShort);
