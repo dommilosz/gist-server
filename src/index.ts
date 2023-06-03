@@ -130,10 +130,7 @@ app.get('/data/:shortUrl/:directory?', async (req: Request, res: Response) => {
 })
 
 app.get('/raw/:shortUrl/:directory?', async (req: Request, res: Response) => {
-    let params = req.params;
-    let urlShort = params.shortUrl;
-    urlShort = encodeURIComponent(urlShort);
-    let gist = await readGist(urlShort);
+    let gist = await readGistFromParams(req.params);
     if (gist) {
         let content = gist.content;
         sendText(res, content, 200)
