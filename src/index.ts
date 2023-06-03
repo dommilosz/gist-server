@@ -68,8 +68,9 @@ app.post('/create', async (req: Request, res: Response) => {
     let body = req.body;
     let data = body?.data;
     let name = body?.name;
-    let urlShort = body?.urlShort;
-    let result = await createGist(data, name, urlShort);
+    let directory:string = body?.directory;
+    let urlShort:string = body?.urlShort;
+    let result = await createGist(data, name, urlShort, directory);
 
     return sendCompletion(res, result.text, result.error, 200);
 })
@@ -106,7 +107,7 @@ async function readGistFromParams(params:ParamsDictionary){
     return await readGist(urlShort,directory);
 }
 
-app.get('/:shortUrl', async (req: Request, res: Response) => {
+app.get('/:shortUrl/:directory?', async (req: Request, res: Response) => {
     let gist = await readGistFromParams(req.params);
     if (gist) {
         let content = gist.content;
@@ -117,7 +118,7 @@ app.get('/:shortUrl', async (req: Request, res: Response) => {
     }
 })
 
-app.get('/data/:shortUrl', async (req: Request, res: Response) => {
+app.get('/data/:shortUrl/:directory?', async (req: Request, res: Response) => {
     let gist = await readGistFromParams(req.params);
 
     if (gist) {
@@ -127,7 +128,7 @@ app.get('/data/:shortUrl', async (req: Request, res: Response) => {
     }
 })
 
-app.get('/raw/:shortUrl', async (req: Request, res: Response) => {
+app.get('/raw/:shortUrl/:directory?', async (req: Request, res: Response) => {
     let params = req.params;
     let urlShort = params.shortUrl;
     urlShort = encodeURIComponent(urlShort);
@@ -161,7 +162,7 @@ function isCustom(url: string) {
     return !customRegex.test(url);
 }
 
-async function createGist(data: string, name: string, urlShort: string, retriesLeft = config.validation.randomRetries, directory = undefined): Promise<{ text: string, error: boolean }> {
+async function createGist(data: string, name: string, urlShort: string, directory?:string, retriesLeft = config.validation.randomRetries): Promise<{ text: string, error: boolean }> {
     if (!urlShort) {
         urlShort = 'A' + makeid(config.validation.randomShortUrlLength - 1);
     }
@@ -185,7 +186,7 @@ async function createGist(data: string, name: string, urlShort: string, retriesL
             if (retriesLeft < 1) {
                 return {text: "Free url not found!", error: true};
             }
-            return await createGist(data, name, "", retriesLeft - 1);
+            return await createGist(data, name, "",directory, retriesLeft - 1);
         } else {
             return {text: "Url taken!", error: true};
         }
