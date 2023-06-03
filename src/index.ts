@@ -108,17 +108,6 @@ async function readGistFromParams(params: ParamsDictionary) {
     return await readGist(urlShort, directory);
 }
 
-app.get('/:shortUrl/:directory?', async (req: Request, res: Response) => {
-    let gist = await readGistFromParams(req.params);
-    if (gist) {
-        let content = gist.content;
-        let name = gist.name;
-        sendFile(req, res, "src/gist-view.html", 200, {...config.localization, content, name, code: gist.code});
-    } else {
-        sendFile(req, res, "src/not-found.html", 404, config.localization);
-    }
-})
-
 app.get('/data/:shortUrl/:directory?', async (req: Request, res: Response) => {
     let gist = await readGistFromParams(req.params);
 
@@ -138,6 +127,18 @@ app.get('/raw/:shortUrl/:directory?', async (req: Request, res: Response) => {
         sendText(res, "404 Not found", 404)
     }
 })
+
+app.get('/:shortUrl/:directory?', async (req: Request, res: Response) => {
+    let gist = await readGistFromParams(req.params);
+    if (gist) {
+        let content = gist.content;
+        let name = gist.name;
+        sendFile(req, res, "src/gist-view.html", 200, {...config.localization, content, name, code: gist.code});
+    } else {
+        sendFile(req, res, "src/not-found.html", 404, config.localization);
+    }
+})
+
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
