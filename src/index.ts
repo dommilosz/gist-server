@@ -68,8 +68,8 @@ app.post('/create', async (req: Request, res: Response) => {
     let body = req.body;
     let data = body?.data;
     let name = body?.name;
-    let directory:string = body?.directory;
-    let urlShort:string = body?.urlShort;
+    let directory: string = body?.directory;
+    let urlShort: string = body?.urlShort;
     let result = await createGist(data, name, urlShort, directory);
 
     return sendCompletion(res, result.text, result.error, 200);
@@ -79,10 +79,10 @@ app.get('/favicon.ico', (req: Request, res: Response) => {
     sendText(res, "", 404);
 })
 
-export type GistType = {content:string, name:string};
-export type FullGistType = {content:string, name:string, code:string};
+export type GistType = { content: string, name: string };
+export type FullGistType = { content: string, name: string, code: string };
 
-async function readGist(urlShort: string, directory?:string):Promise<FullGistType|undefined> {
+async function readGist(urlShort: string, directory?: string): Promise<FullGistType | undefined> {
     let ref;
     if (!directory) {
         ref = firebase_db.collection("gists").doc(urlShort);
@@ -93,18 +93,19 @@ async function readGist(urlShort: string, directory?:string):Promise<FullGistTyp
     let snapshot = await ref.get();
     if (snapshot.exists) {
         let gist = snapshot.data() as GistType;
-        return {...gist, code:urlShort};
+        return {...gist, code: urlShort};
     } else {
         return undefined;
     }
 }
 
-async function readGistFromParams(params:ParamsDictionary){
+async function readGistFromParams(params: ParamsDictionary) {
     let urlShort = params.shortUrl;
     let directory = params.directory;
     urlShort = encodeURIComponent(urlShort);
-    directory = encodeURIComponent(directory);
-    return await readGist(urlShort,directory);
+    if (directory)
+        directory = encodeURIComponent(directory);
+    return await readGist(urlShort, directory);
 }
 
 app.get('/:shortUrl/:directory?', async (req: Request, res: Response) => {
@@ -162,7 +163,7 @@ function isCustom(url: string) {
     return !customRegex.test(url);
 }
 
-async function createGist(data: string, name: string, urlShort: string, directory?:string, retriesLeft = config.validation.randomRetries): Promise<{ text: string, error: boolean }> {
+async function createGist(data: string, name: string, urlShort: string, directory?: string, retriesLeft = config.validation.randomRetries): Promise<{ text: string, error: boolean }> {
     if (!urlShort) {
         urlShort = 'A' + makeid(config.validation.randomShortUrlLength - 1);
     }
@@ -186,7 +187,7 @@ async function createGist(data: string, name: string, urlShort: string, director
             if (retriesLeft < 1) {
                 return {text: "Free url not found!", error: true};
             }
-            return await createGist(data, name, "",directory, retriesLeft - 1);
+            return await createGist(data, name, "", directory, retriesLeft - 1);
         } else {
             return {text: "Url taken!", error: true};
         }
